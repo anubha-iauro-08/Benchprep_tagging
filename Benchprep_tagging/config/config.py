@@ -16,6 +16,8 @@ class Settings(BaseSettings):
         env_nested_delimiter="__"
     )
 
+    print(model_config)
+        
     llm: LLMSettings
     rdbms: RDBMSSettings
     vector: VectorSettings
