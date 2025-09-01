@@ -47,7 +47,7 @@ class GeneratorModelHandler:
         generator_name = platform_config.model_api
 
         full_import_path = (
-            f"com.genai.llm_core.generator_model.generator.{platform}_generator"
+            f"{platform}_generator"
         )
         generator_module = importlib.import_module(full_import_path)
         generator_class = getattr(generator_module, generator_name)

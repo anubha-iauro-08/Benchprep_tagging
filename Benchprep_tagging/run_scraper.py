@@ -1,3 +1,5 @@
+import os
+import sys
 import logging
 from dynaconf import Dynaconf
 from pathlib import Path
@@ -16,14 +18,27 @@ def main():
     print(config.get("SNOWFLAKE__ACCOUNT"))
 
 
-    scraper = SnowflakeScraper(config)
+    scraper = None
     try:
-        dfs = scraper.dataframes_for_first_n_tenants()
-        for i, df in enumerate(dfs, start=1):
-            print(f"\n=== DataFrame {i} ===")
-            df.show(5)
+        # Instantiate the SnowflakeScraper
+        scraper = SnowflakeScraper(config)
+
+        # Call the new method to get the dataframes
+        dataframes = scraper.dataframes_from_snowflake_try_logic()
+
+        # Iterate through the dataframes and print the results
+        for df in dataframes:
+            df.show()
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        sys.exit(1)
+
     finally:
-        scraper.close()
+        # Close the session
+        if scraper:
+            scraper.close()
+
 
 if __name__ == "__main__":
     main()

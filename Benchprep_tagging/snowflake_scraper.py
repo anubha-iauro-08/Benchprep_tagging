@@ -1,7 +1,7 @@
 import logging
 from typing import Any, List
 from snowflake.snowpark import Session
-from snowflake.snowpark.functions import col
+from snowflake.snowpark.functions import col, concat, lit
 from snowflake_connection_parameters_factory import SnowflakeConnectionParametersFactory
 from flash_card_dataframe_factory import FlashCardDataframeFactory
 from question_dataframe_factory import QuestionDataframeFactory
@@ -23,7 +23,7 @@ class SnowflakeScraper:
 
         Args:
             config (dict): Configuration dictionary containing Snowflake settings
-                          and other options.
+                           and other options.
         """
         self.session = Session.builder.configs(
             SnowflakeConnectionParametersFactory().build(config)
@@ -47,6 +47,39 @@ class SnowflakeScraper:
         flash_cards_df = FlashCardDataframeFactory(self.session).build_first_n_tenants(first_n_tenants)
 
         return [readings_df, questions_df, flash_cards_df]
+    
+    def dataframes_from_snowflake_try_logic(self) -> List[Any]:
+        """
+        Fetch flashcards, questions, and readings with the same logic as the queries
+        in snowflake_try.py (filter on _fivetran_deleted and limit 5).
+        """
+        logger.info(f"[SnowflakeScraper] Fetching data with logic from snowflake_try.py")
+
+        # Replicate the query for questions
+        questions_df = (
+            self.session.table(BaseDataframeFactory.QUESTIONS_TABLE)
+            .filter(col("_FIVETRAN_DELETED") == False)
+            .limit(5)
+            .select(col("QUESTION_CONTENT"), col("ANSWER_CONTENT"))
+        )
+        
+        # Replicate the query for readings
+        readings_df = (
+            self.session.table(BaseDataframeFactory.READINGS_TABLE)
+            .filter(col("_FIVETRAN_DELETED") == False)
+            .limit(5)
+            .select(col("CONTENT"))
+        )
+
+        # Replicate the query for flashcards
+        flash_cards_df = (
+            self.session.table(BaseDataframeFactory.FLASH_CARDS_TABLE)
+            .filter(col("_FIVETRAN_DELETED") == False)
+            .limit(5)
+            .select(col("TERM"), col("DEFINITION"))
+        )
+
+        return [questions_df, readings_df, flash_cards_df]
 
     def close(self):
         """
