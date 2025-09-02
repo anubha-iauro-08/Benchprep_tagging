@@ -3,7 +3,7 @@ from cryptography.hazmat.primitives import serialization
 import snowflake.connector
 
 private_key_file = "/home/iauro/Benchprep_tagging/aitutor_rsa_key.p8"
-private_key_file_pwd = "qktCq7HC8W779!hLz@!i"
+private_key_file_pwd = 
 
 # Load private key
 with open(private_key_file, "rb") as key_file:
